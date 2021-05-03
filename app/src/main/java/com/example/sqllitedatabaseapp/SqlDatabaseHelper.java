@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SqlDatabaseHelper extends SQLiteOpenHelper {
-    public SqlDatabaseHelper(@Nullable Context context, @Nullable String name, @Nullable SQLiteDatabase.CursorFactory factory, int version) {
-        super(context, name, factory, version);
+    public SqlDatabaseHelper(@Nullable Context context, @Nullable SQLiteDatabase.CursorFactory factory) {
+        super(context, Util.DATABASE_NAME, factory, Util.DATABASE_VERSION);
     }
 
     @Override
@@ -39,23 +39,40 @@ public class SqlDatabaseHelper extends SQLiteOpenHelper {
         return newRow;
     }
 
+    public void update(int id, String text){
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "UPDATE " + Util.TABLE_NAME + " SET " +  Util.NOTE + " = '" + text + "' WHERE " + Util.NOTE_NUMBER + " = '" + id + "'";
+        db.execSQL(query);
+
+        db.close();
+    }
+
+    public void delete(int id){
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "DELETE FROM " + Util.TABLE_NAME + " WHERE " + Util.NOTE_NUMBER + " = '" + id + "'";
+        db.execSQL(query);
+
+        db.close();
+    }
+
     public List<Note> fetchNote(){
         List<Note> nodeList = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(Util.TABLE_NAME,new String[]{Util.NOTE_NUMBER, Util.NOTE}, Util.NOTE,null, null, null, null);
         Cursor c = db.rawQuery("Select " + Util.NOTE_NUMBER +" , " + Util.NOTE + " From " + Util.TABLE_NAME, null);
 
         if(c.moveToNext()){
             do{
-                String number = c.getString(0);
+                int number = c.getInt(0);
                 String note = c.getString(1);
-                if(!number.equals("") && !note.equals("")){
-                    nodeList.add(new Note(note));
+
+                if(number!=0 && !note.equals("")){
+                    Note n = new Note(note);
+                    n.setNumber(number);
+                    nodeList.add(n);
                 }
             }while (c.moveToNext());
         }
 
-        cursor.close();
         c.close();
         db.close();
         return nodeList;

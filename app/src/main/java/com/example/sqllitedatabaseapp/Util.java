@@ -8,4 +8,6 @@ public class Util {
     public static final String NOTE_NUMBER = "note_num";
     public static final String NOTE = "note";
 
+    public static SqlDatabaseHelper DATABASE_INSTANCE;
+
 }
